@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mood Meter</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+    <h1 class="text-2xl font-bold text-center mb-4">Mood Meter</h1>
+    <p class="text-gray-600 text-center mb-6">Select your current mood and optionally add notes.</p>
+    <form id="moodForm" class="space-y-4">
+      <div>
+        <label for="mood" class="block text-sm font-medium text-gray-700">Current Mood</label>
+        <select id="mood" name="mood" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+          <option value="" disabled selected>Select your mood</option>
+          <option value="Joyful (High Energy, Pleasant)">Joyful (High Energy, Pleasant)</option>
+          <option value="Calm (Low Energy, Pleasant)">Calm (Low Energy, Pleasant)</option>
+          <option value="Anxious (High Energy, Unpleasant)">Anxious (High Energy, Unpleasant)</option>
+          <option value="Sad (Low Energy, Unpleasant)">Sad (Low Energy, Unpleasant)</option>
+        </select>
+      </div>
+      <div>
+        <label for="notes" class="block text-sm font-medium text-gray-700">Notes (Optional)</label>
+        <textarea id="notes" name="notes" rows="4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Why do you feel this way?"></textarea>
+      </div>
+      <button type="submit" class="w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500">Submit Mood</button>
+    </form>
+    <p id="responseMessage" class="mt-4 text-center text-sm text-gray-600"></p>
+  </div>
+
+  <script>
+    document.getElementById('moodForm').addEventListener('submit', async function(event) {
+      event.preventDefault();
+      
+      const mood = document.getElementById('mood').value;
+      const notes = document.getElementById('notes').value;
+      const responseMessage = document.getElementById('responseMessage');
+      
+      if (!mood) {
+        responseMessage.textContent = 'Please select a mood.';
+        responseMessage.classList.add('text-red-500');
+        return;
+      }
+      
+      try {
+        const response = await fetch('https://script.google.com/macros/s/AKfycbxeEfGg1oNqGx-49wyAQwbCGii-vM48omJXg7-v9VSLR2Agtzd9d-O_6qJ0ThWzsw5v/exec', {
+          method: 'POST',
+          body: JSON.stringify({ mood, notes }),
+          headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+          responseMessage.textContent = 'Mood recorded successfully!';
+          responseMessage.classList.remove('text-red-500');
+          responseMessage.classList.add('text-green-500');
+          document.getElementById('moodForm').reset();
+        } else {
+          responseMessage.textContent = 'Error: ' + result.message;
+          responseMessage.classList.add('text-red-500');
+        }
+      } catch (error) {
+        responseMessage.textContent = 'Error submitting mood: ' + error.message;
+        responseMessage.classList.add('text-red-500');
+      }
+    });
+  </script>
+</body>
+</html>
